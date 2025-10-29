@@ -1,44 +1,45 @@
 #!/usr/bin/env python3
-""" Basic Babel setup """
+"""
+Flask app
+"""
 from flask import Flask, render_template, request
-from flask_babel import Babel, _
+from flask_babel import Babel
 
 
-class Config(object):
-    """ Configuration Babel """
-    LANGUAGES = ["en", "fr"]
-    BABEL_DEFAULT_TIMEZONE = 'UTC'
-    BABEL_DEFAULT_LOCALE = 'en'
+class Config:
+    """
+    Config class
+    """
+    LANGUAGES = ['en', 'fr']
 
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__)
+app.url_map.strict_slashes = False
 app.config.from_object(Config)
+
 babel = Babel(app)
+Babel.default_locale = 'en'
+Babel.default_timezone = 'UTC'
+
+
+@app.route('/', methods=['GET'])
+def hello():
+    """ GET /
+    Return:
+      - Render template
+    """
+    return render_template('4-index.html')
 
 
 @babel.localeselector
 def get_locale():
-    """ Locale language
-
-        Return:
-            Best match to the language
     """
-    locale = request.args.get('locale', None)
-
-    if locale and locale in app.config['LANGUAGES']:
+    Get locale from request
+    """
+    locale = request.args.get('locale')
+    if locale in Config.LANGUAGES:
         return locale
-
-    return request.accept_languages.best_match(app.config['LANGUAGES'])
-
-
-@app.route('/', methods=['GET'], strict_slashes=False)
-def hello_world():
-    """ Greeting
-
-        Return:
-            Initial template html
-    """
-    return render_template('4-index.html')
+    return request.accept_languages.best_match(Config.LANGUAGES)
 
 
 if __name__ == "__main__":
