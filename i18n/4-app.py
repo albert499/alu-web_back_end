@@ -1,42 +1,46 @@
 #!/usr/bin/env python3
-"""Flask app with i18n support and locale forcing via URL parameter"""
+"""
+Flask app
+"""
 from flask import Flask, render_template, request
 from flask_babel import Babel
 
 
 class Config:
-    """Flask Babel configuration"""
-    LANGUAGES = ["en", "fr"]
-    BABEL_DEFAULT_LOCALE = "en"
-    BABEL_DEFAULT_TIMEZONE = "UTC"
+    """
+    Config class
+    """
+    LANGUAGES = ['en', 'fr']
 
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 app.config.from_object(Config)
+
 babel = Babel(app)
+Babel.default_locale = 'en'
+Babel.default_timezone = 'UTC'
+
+
+@app.route('/', methods=['GET'])
+def hello():
+    """ GET /
+    Return:
+      - Render template
+    """
+    return render_template('4-index.html')
 
 
 @babel.localeselector
 def get_locale():
-    """Determine the best match for supported languages
-    Priority:
-    1. Locale from URL parameters
-    2. Locale from request headers
     """
-    # Check if locale parameter is in the URL
+    Get locale from request
+    """
     locale = request.args.get('locale')
-    if locale and locale in app.config['LANGUAGES']:
+    if locale in Config.LANGUAGES:
         return locale
-
-    # Fall back to best match from request headers
-    return request.accept_languages.best_match(app.config['LANGUAGES'])
+    return request.accept_languages.best_match(Config.LANGUAGES)
 
 
-@app.route('/')
-def index():
-    """Render the index page"""
-    return render_template('4-index.html')
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port="5000")
